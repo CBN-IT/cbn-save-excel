@@ -1,0 +1,8 @@
+{
+  "name": "save-excel",
+  "private": true,
+  "dependencies": {
+    "polymer": "Polymer/polymer#^0.5"
+  },
+  "version": "0.1"
+}

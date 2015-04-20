@@ -2,7 +2,9 @@
   "name": "save-excel",
   "private": true,
   "dependencies": {
-    "polymer": "Polymer/polymer#^0.5"
+    "polymer": "Polymer/polymer#^0.5",
+    "js-xlsx": "~0.8.0",
+    "jszip": "Stuk/jszip#~2.5.0"
   },
   "version": "0.1"
 }

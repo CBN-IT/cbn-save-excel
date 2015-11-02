@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+	<title>core-list</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+	<script src="../../webcomponentsjs/webcomponents.js"></script>
+	<link rel="import" href="../../polymer/polymer.html">
+	<link rel="import" href="../../paper-button/paper-button.html">
+	<link rel="import" href="../save-excel.html">
+</head>
+<body>
+<template is="dom-bind" id="app">
+	<textarea id="values" rows="10" cols="100">[
+		["test", "test2"],
+		["test", "test2"],
+		["test", "test2"]
+	]</textarea><br />
+	<paper-button raised on-tap="saveExcel">Save to excel</paper-button>
+	<save-excel id="save_excel_elem"></save-excel>
+	
+</template>
+<script>
+	window.addEventListener('WebComponentsReady', function() {
+		// imports are loaded and elements have been registered
+		var app = document.querySelector("#app");
+		app.saveExcel = function(){
+			app.$.save_excel_elem.data = app.$.values.value;
+			app.$.save_excel_elem.arrayToXLSX();
+		}
+	});
+</script>
+</body>
+</html>

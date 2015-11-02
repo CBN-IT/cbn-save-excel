@@ -1,121 +1,156 @@
 <link rel="import" href="../polymer/polymer.html">
-
-<polymer-element name="save-excel" tabindex="-1">
-    <script src="../jszip/dist/jszip.min.js"></script>
-    <script src="../js-xlsx/dist/xlsx.min.js"></script>
-    <template>
-        <style>
-            #downloadLink {
-                position: absolute;
-                top: -1000px;
-                left: -1000px;
-                z-index: 1
-            }
-            :host {
-                display: none;
-            }
-        </style>
-        <a id="downloadLink"></a>
-    </template>
-    <script>
-        (function () {
-            Polymer({
-
-                publish: {
-
-                    /**
-                     * Array of arrays with data to save to excel
-                     *
-                     * @attribute data
-                     * @type array
-                     * @default null
-                     */
-                    data: [
-                        ["test", "test2"],
-                        ["test", "test2"],
-                        ["test", "test2"]
-                    ],
-                    filename: "download.xlsx"
-                },
+<script src="../jszip/dist/jszip.min.js"></script>
+<script src="../js-xlsx/dist/xlsx.min.js"></script>
 
 
-                arrayToXLSX: function () {
+<!--
+`cbn-ace-editor` allows you to use an [ace editor](http://ace.c9.io/) as an element.
+### Usage
+    <save-excel></save-excel>
+@element save-excel
+@demo demo/index.html
+-->
 
-                    function Workbook() {
-                        if (!(this instanceof Workbook)) return new Workbook();
-                        this.SheetNames = [];
-                        this.Sheets = {};
-                    }
+<dom-module id="save-excel">
+	<style>
+		#downloadLink {
+			position: absolute;
+			top: -1000px;
+			left: -1000px;
+			z-index: 1
+		}
 
-                    var wb = new Workbook();
-                    var ws = this.sheet_from_array_of_arrays(this.data);
-                    wb.SheetNames.push("Sheet1");
-                    wb.Sheets["Sheet1"] = ws;
+		:host {
+			display: none;
+		}
+	</style>
+	<template>
+		<a id="downloadLink"></a>
+	</template>
 
-                    var base64Data = XLSX.write(wb, {"type": "base64"});
-                    var blob = this.base64toBlob(base64Data, {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-                    var a = this.$.downloadLink;
-                    a.download = this.filename;
-                    a.href = window.URL.createObjectURL(blob);
-                    a.innerHTML = "";
-                    a.click();
-                },
-                datenum: function (v, date1904) {
-                    if (date1904) v += 1462;
-                    var epoch = Date.parse(v);
-                    return (epoch - new Date(Date.UTC(1899, 11, 30))) / (24 * 60 * 60 * 1000);
-                },
-                sheet_from_array_of_arrays: function (data) {
-                    var ws = {};
-                    var range = {s: {c: 10000000, r: 10000000}, e: {c: 0, r: 0}};
-                    for (var R = 0; R != data.length; ++R) {
-                        for (var C = 0; C != data[R].length; ++C) {
-                            if (range.s.r > R) range.s.r = R;
-                            if (range.s.c > C) range.s.c = C;
-                            if (range.e.r < R) range.e.r = R;
-                            if (range.e.c < C) range.e.c = C;
-                            var cell = {v: data[R][C]};
-                            if (cell.v == null) continue;
-                            var cell_ref = XLSX.utils.encode_cell({c: C, r: R});
+	<script>
+		(function () {
+			Polymer({
+				is: 'save-excel',
+				properties:{
+					/**
+					 * The file name
+					 */
+					filename: {
+						type: String,
+						reflectToAttribute: true,
+						value: "download.xlsx"
+					},
+					/**
+					 * Array of arrays with data to save to excel
+					 */
+					data: {
+						type: Array,
+						value: function () {
+							return [];
+						}
+					}
+				},
+				/**
+				 * Set this.data with the array of arrays you want to save to excel<br />
+				 * Then call this function without parameters
+				 */
+				arrayToXLSX: function () {
+					if(typeof  this.data ==="string"){
+						this.data = JSON.parse(this.data);
+					}
+					function Workbook() {
+						if (!(this instanceof Workbook))
+							return new Workbook();
+						this.SheetNames = [];
+						this.Sheets = {};
+					}
 
-                            if (typeof cell.v === 'number') cell.t = 'n';
-                            else if (typeof cell.v === 'boolean') cell.t = 'b';
-                            else if (cell.v instanceof Date) {
-                                cell.t = 'n';
-                                cell.z = XLSX.SSF._table[14];
-                                cell.v = this.datenum(cell.v);
-                            }
-                            else cell.t = 's';
-
-                            ws[cell_ref] = cell;
-                        }
-                    }
-                    if (range.s.c < 10000000) ws['!ref'] = XLSX.utils.encode_range(range);
-                    return ws;
-                },
-                base64toBlob: function (base64Data, contentType) {
-                    contentType = contentType || '';
-                    var sliceSize = 1024;
-                    var byteCharacters = atob(base64Data);
-                    var bytesLength = byteCharacters.length;
-                    var slicesCount = Math.ceil(bytesLength / sliceSize);
-                    var byteArrays = new Array(slicesCount);
-
-                    for (var sliceIndex = 0; sliceIndex < slicesCount; ++sliceIndex) {
-                        var begin = sliceIndex * sliceSize;
-                        var end = Math.min(begin + sliceSize, bytesLength);
-
-                        var bytes = new Array(end - begin);
-                        for (var offset = begin, i = 0; offset < end; ++i, ++offset) {
-                            bytes[i] = byteCharacters[offset].charCodeAt(0);
-                        }
-                        byteArrays[sliceIndex] = new Uint8Array(bytes);
-                    }
-                    return new Blob(byteArrays, {type: contentType});
-                }
-
-            });
-
-        })();
-    </script>
-</polymer-element>
+					var wb = new Workbook();
+					var ws = this._sheet_from_array_of_arrays(this.data);
+					wb.SheetNames.push('Sheet1');
+					wb.Sheets['Sheet1'] = ws;
+					var base64Data = XLSX.write(wb, {'type': 'base64'});
+					var blob = this._base64toBlob(base64Data, {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+					var a = this.$.downloadLink;
+					a.download = this.filename;
+					a.href = window.URL.createObjectURL(blob);
+					a.innerHTML = '';
+					a.click();
+				},
+				_datenum: function (v, date1904) {
+					if (date1904)
+						v += 1462;
+					var epoch = Date.parse(v);
+					return (epoch - new Date(Date.UTC(1899, 11, 30))) / (24 * 60 * 60 * 1000);
+				},
+				_sheet_from_array_of_arrays: function (data) {
+					var ws = {};
+					var range = {
+						s: {
+							c: 10000000,
+							r: 10000000
+						},
+						e: {
+							c: 0,
+							r: 0
+						}
+					};
+					for (var R = 0; R != data.length; ++R) {
+						for (var C = 0; C != data[R].length; ++C) {
+							if (range.s.r > R)
+								range.s.r = R;
+							if (range.s.c > C)
+								range.s.c = C;
+							if (range.e.r < R)
+								range.e.r = R;
+							if (range.e.c < C)
+								range.e.c = C;
+							var cell = {v: data[R][C]};
+							if (cell.v == null)
+								continue;
+							var cell_ref = XLSX.utils.encode_cell({
+								c: C,
+								r: R
+							});
+							if (typeof cell.v === 'number')
+								cell.t = 'n';
+							else if (typeof cell.v === 'boolean')
+								cell.t = 'b';
+							else if (cell.v instanceof Date) {
+								cell.t = 'n';
+								cell.z = XLSX.SSF._table[14];
+								cell.v = this._datenum(cell.v);
+							} else
+								cell.t = 's';
+							ws[cell_ref] = cell;
+						}
+					}
+					if (range.s.c < 10000000)
+						ws['!ref'] = XLSX.utils.encode_range(range);
+					return ws;
+				},
+				_base64toBlob: function (base64Data, contentType) {
+					contentType = contentType || '';
+					var sliceSize = 1024;
+					var byteCharacters = atob(base64Data);
+					var bytesLength = byteCharacters.length;
+					var slicesCount = Math.ceil(bytesLength / sliceSize);
+					var byteArrays = new Array(slicesCount);
+					for (var sliceIndex = 0; sliceIndex < slicesCount; ++sliceIndex) {
+						var begin = sliceIndex * sliceSize;
+						var end = Math.min(begin + sliceSize, bytesLength);
+						var bytes = new Array(end - begin);
+						for (var offset = begin, i = 0; offset < end; ++i, ++offset) {
+							bytes[i] = byteCharacters[offset].charCodeAt(0);
+						}
+						byteArrays[sliceIndex] = new Uint8Array(bytes);
+					}
+					return new Blob(byteArrays, {type: contentType});
+				},
+				hostAttributes: {'tabindex': '-1'}
+			});
+		}());
+	</script>
+</dom-module>
+  

@@ -7,22 +7,32 @@
 	<link rel="import" href="../../polymer/polymer.html">
 	<link rel="import" href="../../paper-button/paper-button.html">
 	<link rel="import" href="../cbn-save-excel.html">
+
+	<link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+	<link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
 </head>
 <body>
-<template is="dom-bind" id="app">
-	<textarea id="values" rows="10" cols="100">[
-		["test", "test2"],
-		["test", "test2"],
-		["test", "test2"]
-	]</textarea><br />
-	<paper-button raised on-tap="saveExcel">Save to excel</paper-button>
-	<cbn-save-excel id="save_excel_elem"></cbn-save-excel>
-	
-</template>
+<form id="demoForm" is="cbn-form" model>
+	<demo-snippet class="centered-demo" style="position:relative">
+		<template is="dom-bind">
+			<textarea id="values" rows="10" cols="100">
+				[
+					["test", "test2"],
+					["test", "test2"],
+					["test", "test2"]
+				]
+			</textarea>
+			<br />
+			<paper-button raised on-tap="saveExcel">Save to excel</paper-button>
+			<cbn-save-excel id="save_excel_elem"></cbn-save-excel>
+		</template>
+	</demo-snippet>
+	<br/>
+</form>
 <script>
 	window.addEventListener('WebComponentsReady', function() {
 		// imports are loaded and elements have been registered
-		var app = document.querySelector("#app");
+		var app = document.querySelector("template[is=dom-bind]");
 		app.saveExcel = function(){
 			app.$.save_excel_elem.data = app.$.values.value;
 			app.$.save_excel_elem.arrayToXLSX();
